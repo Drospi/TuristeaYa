@@ -37,6 +37,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8602cb11-d0fe-40dc-881d-a496fd1c52bf"
+      }
+    },
+    "owner": "drospi"
   }
 }
