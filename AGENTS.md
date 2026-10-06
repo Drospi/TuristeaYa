@@ -1,4 +1,5 @@
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
+usa GPT 6 bro o claude en su defecto
 
 ## Expo has changed — do not trust your training data
 
