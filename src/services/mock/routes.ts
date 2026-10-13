@@ -11,6 +11,7 @@ export const routes: TourRoute[] = [
     durationMin: 150,
     distanceKm: 1.8,
     rating: 4.8,
+    saved: true,
     stops: [
       { order: 1, placeId: 'cafe-del-patio', placeName: 'Café del Patio', time: '14:00', durationMin: 45, cost: 35 },
       { order: 2, placeId: 'galeria-de-la-ciudad', placeName: 'Galería de la Ciudad', time: '14:55', durationMin: 50, cost: 20 },
@@ -26,6 +27,7 @@ export const routes: TourRoute[] = [
     durationMin: 110,
     distanceKm: 1,
     rating: 4.6,
+    saved: false,
     note: 'Traslado estimado: 10 minutos a pie.',
     stops: [
       { order: 1, placeId: 'galeria-de-la-ciudad', placeName: 'Galería de la Ciudad', time: '14:00', durationMin: 50, cost: 20 },

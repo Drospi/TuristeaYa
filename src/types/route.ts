@@ -20,6 +20,8 @@ export interface TourRoute {
   durationMin: number;
   distanceKm: number;
   rating: number;
+  /** true: ruta guardada (se puede editar); false: sugerencia de búsqueda. */
+  saved: boolean;
   stops: RouteStop[];
   note?: string;
 }

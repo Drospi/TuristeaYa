@@ -32,6 +32,7 @@ export const colors = {
   borderAlt: '#cad8d0',
   borderGreen: '#c7dace',
   borderSoft: '#d9e6de',
+  borderSoftGreen: '#bdd1c3',
   borderHighlight: '#e6d8c6',
   borderCream: '#daccb9',
   /** Texto sobre botón primario. */
