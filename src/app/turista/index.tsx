@@ -1,56 +1,31 @@
-import { useCallback } from 'react';
-
 import { router } from 'expo-router';
-
 import { Screen } from '@/components/layout/screen';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { ListCard } from '@/components/ui/list-card';
-import { useApiData } from '@/hooks/use-api-data';
-import { api } from '@/services/api';
+import { RecommendationCarousel } from '@/features/turista/components/recommendation-carousel';
+import { RouteStatus } from '@/features/turista/components/route-status';
+import { useDiscovery } from '@/features/turista/discovery-context';
+import { outingNotices } from '@/features/turista/data/discovery';
+import { useSelectedLocation } from '@/features/turista/location-context';
+import { useRoutes } from '@/features/turista/route-context';
 import { formatDuration } from '@/utils/format';
-
-/** Pantalla 04 del prototipo: inicio del turista. */
 export default function InicioScreen() {
-  const routes = useApiData(useCallback(() => api.getRoutes(), []));
-  const places = useApiData(useCallback(() => api.getPlaces(), []));
-
-  const featuredRoute = routes?.[0];
-  const featuredPlace = places?.[0];
-
-  return (
-    <Screen title="Inicio" subtitle="La Paz · Centro">
-      <Button
-        title="Cambiar ubicación"
-        variant="secondary"
-        onPress={() => router.navigate('/turista/ubicacion')}
-      />
-      <Button title="Crear una ruta" onPress={() => router.navigate('/turista/crear-ruta')} />
-      <AppText variant="body">Recomendado según tus intereses</AppText>
-      {featuredRoute ? (
-        <ListCard
-          title={featuredRoute.name}
-          body={`${featuredRoute.tagline} · Bs ${featuredRoute.cost} · ${formatDuration(featuredRoute.durationMin)}`}
-          onPress={() => router.navigate(`/turista/ruta/${featuredRoute.id}`)}
-        />
-      ) : null}
-      {featuredPlace ? (
-        <ListCard
-          title={featuredPlace.name}
-          body={`A ${featuredPlace.distanceM} m · Desde Bs ${featuredPlace.priceFrom} · ${featuredPlace.rating} / 5`}
-          onPress={() => router.navigate(`/turista/lugar/${featuredPlace.id}`)}
-        />
-      ) : null}
-      <ListCard
-        title="Avisos de mi salida"
-        body="La galería cambió su horario de cierre."
-        onPress={() => router.navigate('/turista/notificaciones')}
-      />
-      <ListCard
-        title="Patrocinado · Restaurante local"
-        body="Promoción del día · Consulta condiciones."
-        onPress={() => router.navigate('/turista/cupones')}
-      />
-    </Screen>
-  );
+  const { location } = useSelectedLocation();
+  const { readNotices } = useDiscovery();
+  const { routes } = useRoutes();
+  const unreadCount = outingNotices.filter((notice) => !readNotices.includes(notice.id)).length;
+  return <Screen title="Inicio" subtitle={location.label === 'Centro de La Paz' ? 'La Paz · Centro' : location.label}>
+    <Button align="left" title="Cambiar ubicación" variant="secondary" onPress={() => router.navigate('/turista/ubicacion')} />
+    <Button align="left" title="Crear una ruta" onPress={() => router.navigate('/turista/crear-ruta')} />
+    <AppText variant="body">Descubre lugares reales de La Paz</AppText>
+    <ListCard title="Encuentra tu recorrido" body="Combina gastronomía, cultura y naturaleza con tu tiempo y presupuesto." onPress={() => router.navigate('/turista/crear-ruta')} />
+    <ListCard title="Café del Mundo" body="Calle Sagárnaga · Ver información, mapa y guardar en una ruta" onPress={() => router.navigate('/turista/lugar/cafe-del-mundo')} />
+    <ListCard title="Avisos de mi salida" body={unreadCount ? `${unreadCount} avisos sin leer · Revisa las novedades.` : 'Estás al día · Ver avisos.'} onPress={() => router.navigate('/turista/notificaciones')} />
+    <RecommendationCarousel />
+    <RouteStatus />
+    {routes.length ? <AppText variant="section">Mis rutas guardadas</AppText> : null}
+    {routes.slice(0, 3).map((route) => <ListCard key={route.id} title={route.name} body={`${route.placeIds.length} paradas · ${formatDuration(route.durationMin)} aprox.${route.visited ? ' · Visitada' : ''}`} onPress={() => router.navigate(`/turista/ruta/${route.id}`)} />)}
+    <Button title="Ver Mis rutas" variant="secondary" onPress={() => router.navigate('/turista/mis-rutas')} />
+  </Screen>;
 }

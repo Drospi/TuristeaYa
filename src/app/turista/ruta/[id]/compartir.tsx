@@ -1,46 +1,23 @@
-import { useCallback } from 'react';
-
-import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Share } from 'react-native';
-
+import { router, useLocalSearchParams } from 'expo-router';
 import { Screen } from '@/components/layout/screen';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
-import { FormField } from '@/components/ui/form-field';
-import { useApiData } from '@/hooks/use-api-data';
-import { api } from '@/services/api';
-import { formatDuration } from '@/utils/format';
-
-/** Pantalla 17 del prototipo: compartir una ruta guardada. */
+import { useRoutes } from '@/features/turista/route-context';
+import { realPlaces } from '@/features/turista/data/real-places';
+import { RouteStatus } from '@/features/turista/components/route-status';
 export default function CompartirRutaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const route = useApiData(useCallback(() => api.getRoute(String(id)), [id]));
-
-  if (!route) return null;
-
-  const link = `turisteaya.demo/ruta/${route.id === 'paseo-por-el-centro' ? 'centro' : route.id}`;
-
-  const shareRoute = () => {
-    Share.share({ message: `${route.name} · ${link}` });
-  };
-
-  return (
-    <Screen
-      title="Compartir ruta"
-      subtitle={route.name}
-      onBack={() => router.navigate(`/turista/ruta/${route.id}`)}
-    >
-      <AppText variant="body">
-        {`${route.stops.length} paradas · ${formatDuration(route.durationMin)} · Bs ${route.cost}`}
-      </AppText>
-      <FormField label="Enlace de la ruta" value={link} />
-      <Button title="Copiar enlace" onPress={shareRoute} />
-      <Button title="Compartir con otra aplicación" onPress={shareRoute} />
-      <Button
-        title="Volver al itinerario"
-        variant="secondary"
-        onPress={() => router.navigate(`/turista/ruta/${route.id}`)}
-      />
-    </Screen>
-  );
+  const { findRoute } = useRoutes();
+  const [error, setError] = useState('');
+  const route = findRoute(id);
+  const message = route ? `${route.name}\nSalida: ${route.departure}\n${route.placeIds.map((placeId, index) => `${index + 1}. ${realPlaces.find((p) => p.id === placeId)!.name}`).join('\n')}\nPresupuesto estimado: Bs ${route.cost}\nDuración aproximada: ${route.durationMin} min. Verifica horarios y tarifas.` : '';
+  return <Screen title="Compartir itinerario" subtitle={route?.name}>
+    <RouteStatus />
+    <AppText variant="body" selectable>{message || 'Ruta no disponible.'}</AppText>
+    <Button title="Compartir con otra aplicación" disabled={!route} onPress={async () => { try { await Share.share({ message }); } catch { setError('No se pudo compartir. Puedes seleccionar y copiar el itinerario de arriba.'); } }} />
+    {error ? <AppText variant="caption">{error}</AppText> : null}
+    <Button title="Volver" variant="secondary" onPress={() => router.back()} />
+  </Screen>;
 }

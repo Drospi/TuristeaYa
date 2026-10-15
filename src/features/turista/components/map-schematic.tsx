@@ -18,7 +18,7 @@ const stopSlots = [
   { left: '21%', top: 74 },
   { left: '43%', top: 24 },
   { left: '78%', top: 35 },
-];
+] as const;
 
 export function MapSchematic({ label = 'Mapa del recorrido · esquema', stopsCount, height = 155 }: MapSchematicProps) {
   return (

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, type AccessibilityProps } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type ViewStyle, type AccessibilityProps } from 'react-native';
 
 import { AppText } from '@/components/ui/app-text';
 import { colors, radius, sizes, spacing, borderWidth } from '@/theme';
@@ -11,6 +11,8 @@ type ButtonProps = AccessibilityProps & {
   /** md: alto 46; sm: alto 31. */
   size?: 'md' | 'sm';
   disabled?: boolean;
+  align?: 'left' | 'center';
+  style?: StyleProp<ViewStyle>;
 };
 
 /** Botón medido en Figma: alto 46, radio 8, texto 14/20 bold. */
@@ -20,6 +22,8 @@ export function Button({
   variant = 'primary',
   size = 'md',
   disabled = false,
+  align = 'center',
+  style,
   ...accessibility
 }: ButtonProps) {
   const isPrimary = variant === 'primary';
@@ -32,9 +36,11 @@ export function Button({
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
+        align === 'left' && { alignItems: 'flex-start' },
         size === 'md' ? styles.md : styles.sm,
         isPrimary ? styles.primary : isSoft ? styles.soft : styles.secondary,
         pressed && pressedStyle(variant),
+        style,
         disabled && styles.disabled,
       ]}
       {...accessibility}

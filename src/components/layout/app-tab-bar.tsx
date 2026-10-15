@@ -54,7 +54,9 @@ export function AppTabBar() {
   const tabs = tabsByArea[area];
   if (!tabs) return null;
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => href === `/${area}`
+    ? pathname === href || !tabs.some((tab) => tab.href !== href && (pathname === tab.href || pathname.startsWith(`${tab.href}/`)))
+    : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.bar}>

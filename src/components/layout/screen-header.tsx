@@ -4,9 +4,9 @@ import { router } from 'expo-router';
 
 import { AppText } from '@/components/ui/app-text';
 import { Divider } from '@/components/ui/divider';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
-type ScreenHeaderProps = {
+export type ScreenHeaderProps = {
   title: string;
   subtitle?: string;
   /** Muestra el botón de retroceso "‹". */

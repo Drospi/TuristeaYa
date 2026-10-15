@@ -3,6 +3,9 @@ import { View } from 'react-native';
 
 import { AppTabBar } from '@/components/layout/app-tab-bar';
 import { colors } from '@/theme';
+import { DiscoveryProvider } from '@/features/turista/discovery-context';
+import { RouteProvider } from '@/features/turista/route-context';
+import { LocationProvider } from '@/features/turista/location-context';
 
 /**
  * Área del turista: stack propio con la barra de pestañas
@@ -10,6 +13,9 @@ import { colors } from '@/theme';
  */
 export default function TuristaLayout() {
   return (
+    <LocationProvider>
+    <DiscoveryProvider>
+    <RouteProvider>
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack
         screenOptions={{
@@ -19,5 +25,8 @@ export default function TuristaLayout() {
       />
       <AppTabBar />
     </View>
+    </RouteProvider>
+    </DiscoveryProvider>
+    </LocationProvider>
   );
 }

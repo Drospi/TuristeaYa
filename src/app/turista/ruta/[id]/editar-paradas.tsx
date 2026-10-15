@@ -1,96 +1,39 @@
-import { useCallback, useState } from 'react';
-
+import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-
 import { Screen } from '@/components/layout/screen';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { ListCard } from '@/components/ui/list-card';
-import { useApiData } from '@/hooks/use-api-data';
-import { api } from '@/services/api';
-import { colors, fontFamilies, radius, spacing, borderWidth } from '@/theme';
-import type { RouteStop } from '@/types';
-
-/** Pantalla 11 del prototipo: reordenar las paradas de una ruta. */
+import { RouteStatus } from '@/features/turista/components/route-status';
+import { useRoutes } from '@/features/turista/route-context';
+import { calculateRoute, type PlannedRoute } from '@/features/turista/data/route-planner';
+import { realPlaces } from '@/features/turista/data/real-places';
+import { formatDuration } from '@/utils/format';
 export default function EditarParadasScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const route = useApiData(useCallback(() => api.getRoute(String(id)), [id]));
-  const [stops, setStops] = useState<RouteStop[] | null>(null);
-
-  if (!route) return null;
-  const current = stops ?? route.stops;
-
-  const move = (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= current.length) return;
-    const next = [...current];
-    const [item] = next.splice(index, 1);
-    next.splice(target, 0, item);
-    setStops(next.map((stop, position) => ({ ...stop, order: position + 1 })));
-  };
-
-  return (
-    <Screen title="Editar paradas" subtitle={route.name}>
-      <AppText variant="body">Cambia el orden con las flechas.</AppText>
-      {current.map((stop, index) => (
-        <View key={stop.placeId} style={styles.row}>
-          <AppText variant="bodySmall" color="ink" style={styles.rowLabel}>
-            {`${stop.order}. ${stop.placeName} · Bs ${stop.cost}`}
-          </AppText>
-          <View style={styles.arrows}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Subir ${stop.placeName}`}
-              hitSlop={6}
-              onPress={() => move(index, -1)}
-            >
-              <Text style={styles.arrow}>↑</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Bajar ${stop.placeName}`}
-              hitSlop={6}
-              onPress={() => move(index, 1)}
-            >
-              <Text style={styles.arrow}>↓</Text>
-            </Pressable>
-          </View>
-        </View>
-      ))}
-      <AppText variant="body">{'Nuevo orden de ejemplo:\nGalería → Café → Mirador'}</AppText>
-      <ListCard title="Resumen actualizado" body="Bs 85 · 2 h 40 min · 2.1 km" />
-      <Button title="Guardar cambios" onPress={() => router.back()} />
-      <Button title="Cancelar" variant="secondary" onPress={() => router.back()} />
-    </Screen>
-  );
+  const { routes } = useRoutes();
+  const route = routes.find((item) => item.id === id);
+  if (!route) return <Screen title="Editar paradas"><RouteStatus /><AppText variant="body">Primero guarda la ruta.</AppText></Screen>;
+  return <Editor key={route.id} route={route} />;
 }
-
-const styles = StyleSheet.create({
-  row: {
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: borderWidth.hairline,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  rowLabel: {
-    flex: 1,
-    color: colors.ink,
-  },
-  arrows: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingLeft: spacing.sm,
-  },
-  arrow: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: colors.ink,
-    fontFamily: fontFamilies.regular,
-  },
-});
+function Editor({ route }: { route: PlannedRoute }) {
+  const { busy, repository } = useRoutes();
+  const [ids, setIds] = useState(route.placeIds);
+  const preview = calculateRoute({ ...route, placeIds: ids });
+  function move(index: number, offset: number) {
+    const next = [...ids]; const target = index + offset;
+    if (target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]]; setIds(next);
+  }
+  return <Screen title="Editar paradas" subtitle={route.name}>
+    <RouteStatus />
+    {ids.map((id, index) => <ListCard key={id} title={`${index + 1}. ${realPlaces.find((p) => p.id === id)!.name}`} footer={<>
+      <Button title="Subir" variant="secondary" disabled={busy || index === 0} onPress={() => move(index, -1)} />
+      <Button title="Bajar" variant="secondary" disabled={busy || index === ids.length - 1} onPress={() => move(index, 1)} />
+      <Button title="Quitar parada" variant="secondary" disabled={busy || ids.length === 1} onPress={() => setIds(ids.filter((item) => item !== id))} />
+    </>} />)}
+    <ListCard title="Resumen actualizado" body={`Bs ${preview.cost} estimados · ${formatDuration(preview.durationMin)} aprox. · ${preview.distanceKm} km aprox.`} />
+    <Button title="Guardar cambios" disabled={busy} onPress={() => { void repository.updateStops(route.id, ids).then(() => router.back()).catch(() => undefined); }} />
+    <Button title="Cancelar" variant="secondary" disabled={busy} onPress={() => router.back()} />
+  </Screen>;
+}
