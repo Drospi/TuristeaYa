@@ -1,11 +1,6 @@
 import { useState } from "react";
-import {
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-} from "react-native";
+import { ScrollView, StatusBar, StyleSheet, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BottomTabBar } from "../../components/Jose/BottomTabBar";
 import { HeaderCupones } from "../../components/Jose/HeaderCupones";
 import { EstadoCupon, TabsEstado } from "../../components/Jose/TabsEstado";
