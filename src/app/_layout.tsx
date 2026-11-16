@@ -5,11 +5,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 
+import { AuthProvider } from '@/context/auth-context';
 import { colors } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
 
-/** Raíz: carga la tipografía Inter y define el stack principal. */
+/** Raíz: carga la tipografía Inter, provee sesión de autenticación y define el stack principal. */
 export default function RootLayout() {
   const [loaded] = useFonts({
     Inter_400Regular,
@@ -27,7 +28,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <AuthProvider>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -35,6 +36,6 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.background },
         }}
       />
-    </>
+    </AuthProvider>
   );
 }
